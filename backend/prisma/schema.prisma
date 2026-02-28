@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+  SECURITY
+}
+
+enum ItemType {
+  LOST
+  FOUND
+}
+
+enum ItemStatus {
+  ACTIVE
+  MATCHED
+  CLAIMED
+  CLOSED
+}
+
+enum MatchStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  MATCH_FOUND
+  CLAIM_SUBMITTED
+  CLAIM_APPROVED
+  CLAIM_REJECTED
+  MESSAGE_RECEIVED
+  ITEM_STATUS_UPDATE
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(STUDENT)
+  studentId    String?  @unique
+  phone        String?
+  department   String?
+  avatarUrl    String?
+  refreshToken String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items         Item[]
+  claims        Claim[]
+  notifications Notification[]
+  sentMessages  Message[]
+  chatRooms     ChatRoomParticipant[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Item {
+  id           String     @id @default(uuid())
+  title        String
+  description  String
+  category     String
+  type         ItemType
+  status       ItemStatus @default(ACTIVE)
+  location     String
+  building     String?
+  floor        String?
+  dateLostFound DateTime
+  imageUrl     String?
+  tags         String[]
+
+  reporterId String
+  reporter   User   @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  lostMatches  Match[]  @relation("LostItem")
+  foundMatches Match[]  @relation("FoundItem")
+  claims       Claim[]
+
+  @@index([type])
+  @@index([status])
+  @@index([category])
+  @@index([reporterId])
+  @@index([dateLostFound])
+  @@index([location])
+  @@map("items")
+}
+
+model Match {
+  id              String      @id @default(uuid())
+  lostItemId      String
+  foundItemId     String
+  confidenceScore Float
+  status          MatchStatus @default(PENDING)
+  adminNote       String?
+
+  lostItem  Item @relation("LostItem", fields: [lostItemId], references: [id], onDelete: Cascade)
+  foundItem Item @relation("FoundItem", fields: [foundItemId], references: [id], onDelete: Cascade)
+
+  chatRoom ChatRoom?
+  claims   Claim[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([lostItemId, foundItemId])
+  @@index([status])
+  @@index([lostItemId])
+  @@index([foundItemId])
+  @@map("matches")
+}
+
+model ChatRoom {
+  id       String  @id @default(uuid())
+  matchId  String  @unique
+  isActive Boolean @default(true)
+
+  match        Match                @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  participants ChatRoomParticipant[]
+  messages     Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chat_rooms")
+}
+
+model ChatRoomParticipant {
+  id         String @id @default(uuid())
+  chatRoomId String
+  userId     String
+
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatRoomId, userId])
+  @@map("chat_room_participants")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  chatRoomId String
+  senderId   String
+  content    String
+  isRead     Boolean  @default(false)
+
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  sender   User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([chatRoomId])
+  @@index([senderId])
+  @@index([isRead])
+  @@map("messages")
+}
+
+model Claim {
+  id          String      @id @default(uuid())
+  itemId      String
+  matchId     String?
+  claimantId  String
+  description String
+  status      ClaimStatus @default(PENDING)
+  adminNote   String?
+
+  item     Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  match    Match? @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  claimant User  @relation(fields: [claimantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([claimantId])
+  @@index([itemId])
+  @@map("claims")
+}
+
+model Notification {
+  id      String           @id @default(uuid())
+  userId  String
+  type    NotificationType
+  title   String
+  body    String
+  isRead  Boolean          @default(false)
+  data    Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
