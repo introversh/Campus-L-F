@@ -34,7 +34,7 @@ export default function ChatRoomPage() {
         }
 
         // Use full URL to be safe, or relative with explicit transports
-        const socket = io('http://localhost:3000/chat', {
+        const socket = io('https://campus-l-f.onrender.com/chat', {
             auth: { token },
             path: '/socket.io',
             transports: ['polling', 'websocket'],

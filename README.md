@@ -38,8 +38,8 @@ docker-compose up --build
 ```
 
 - Frontend: http://localhost
-- Backend API: http://localhost:3000/api
-- Swagger docs: http://localhost:3000/api/docs
+- Backend API: https://campus-l-f.onrender.com/api
+- Swagger docs: https://campus-l-f.onrender.com/api/docs
 
 ### Local Development
 
