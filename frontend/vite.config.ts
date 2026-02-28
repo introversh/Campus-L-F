@@ -11,10 +11,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/api': { target: 'https://campus-l-f.onrender.com', changeOrigin: true },
       // Proxy socket.io WebSocket connections to the NestJS backend
       '/socket.io': {
-        target: 'http://localhost:3000',
+        target: 'https://campus-l-f.onrender.com',
         ws: true,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/socket\.io/, '/socket.io'),

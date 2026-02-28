@@ -58,7 +58,7 @@ npm run start:dev
 cd frontend
 npm install
 npm run dev
-# Proxies /api requests to http://localhost:3000
+# Proxies /api requests to https://campus-l-f.onrender.com
 ```
 
 ## Environment Variables
