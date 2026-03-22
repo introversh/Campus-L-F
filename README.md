@@ -37,9 +37,7 @@ A full-stack web application for managing lost and found items on a university c
 docker-compose up --build
 ```
 
-- Frontend: http://localhost
-- Backend API: https://campus-l-f.onrender.com/api
-- Swagger docs: https://campus-l-f.onrender.com/api/docs
+- Live Link: https://campuslf.vercel.app/
 
 ### Local Development
 
@@ -73,9 +71,6 @@ See `backend/.env.example` for required variables:
 | `JWT_REFRESH_SECRET` | Refresh token signing secret |
 | `PORT` | Backend port (default 3000) |
 
-## API Documentation
-
-Swagger UI is available at `/api/docs` when the backend is running.
 
 ## Project Structure
 
